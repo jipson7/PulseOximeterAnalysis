@@ -13,7 +13,7 @@ def create_date_from_millis(millis):
 class Device:
 
     data_collection = "data"
-    data_sets = {}
+    df = None
 
     # Keys
     HR = 'hr'
@@ -21,7 +21,7 @@ class Device:
     RED_LED = 'red_led'
     IR_LED = 'ir_led'
 
-    headers = ['timestamp', HR, O2, RED_LED, IR_LED]
+    headers = [HR, O2, RED_LED, IR_LED]
 
     def __init__(self, document):
         data = document.to_dict()
@@ -36,29 +36,33 @@ class Device:
             s += " : " + self.user_description
         return s
 
-    def get_data(self):
+    def get_dataframe(self):
         print("Loading data...")
         data_docs = self.data_ref.get()
-        result = []
+        indices = []
+        data = []
         for doc in data_docs:
-            row = self._extract_row(doc)
-            result.append(row)
+            timestamp, datum = self._extract_row(doc)
+            indices.append(timestamp)
+            data.append(datum)
         print("Data Loaded. Creating Data Frame...")
-        return pd.DataFrame(result, columns=self.headers)
+        self.df = pd.DataFrame(data, columns=self.headers, index=indices)
+        return self.df
 
     def _extract_row(self, doc):
         data = doc.to_dict()
-        t = int(doc.id)
+        t = pd.to_datetime(int(doc.id), unit='ms')
         hr = data.get(self.HR, None)
         o2 = data.get(self.O2, None)
         red = data.get(self.RED_LED, None)
         ir = data.get(self.IR_LED, None)
-        return [t, hr, o2, red, ir]
+        return t, [hr, o2, red, ir]
 
 
 class Trial:
 
     devices_collection = "devices"
+    devices = None
 
     def __init__(self, document):
         data = document.to_dict()
@@ -74,7 +78,8 @@ class Trial:
         devices = []
         for doc in device_docs:
             devices.append(Device(doc))
-        return devices
+        self.devices = devices
+        return self.devices
 
     def __str__(self):
         return self.start_string + " - " + self.description
@@ -96,4 +101,3 @@ class Loader:
         for doc in trial_docs:
             trials.append(Trial(doc))
         return trials
-
