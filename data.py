@@ -1,13 +1,23 @@
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
+import pyrebase
 from datetime import datetime
-from collections import OrderedDict
 import pandas as pd
+
+config = {
+  "apiKey": "AIzaSyBKkJ72xZVPA8CX4ETB2YVZ4gcBAfv1mIU",
+  "authDomain": "pulseoximeterapp.firebaseapp.com",
+  "databaseURL": "https://pulseoximeterapp.firebaseio.com",
+  "storageBucket": "pulseoximeterapp.appspot.com"
+}
+
+firebase = pyrebase.initialize_app(config)
+
+db = firebase.database()
 
 
 def create_date_from_millis(millis):
-    return datetime.fromtimestamp(millis / 1000.0)
+    if millis is not None:
+        return datetime.fromtimestamp(millis / 1000.0)
+    return None
 
 
 class Device:
@@ -23,12 +33,11 @@ class Device:
 
     headers = [HR, O2, RED_LED, IR_LED]
 
-    def __init__(self, document):
-        data = document.to_dict()
-        self.description = data['description']
-        self.name = data['name']
-        self.user_description = data['user_description']
-        self.data_ref = document.reference.collection(self.data_collection)
+    def __init__(self, device_data):
+        self.description = device_data['description']
+        self.name = device_data['name']
+        self.user_description = device_data.get('user_description', None)
+        self._create_data_frame(device_data['data'])
 
     def __str__(self):
         s = self.description
@@ -36,68 +45,53 @@ class Device:
             s += " : " + self.user_description
         return s
 
-    def get_dataframe(self):
+    def _create_data_frame(self, data):
         print("Loading data...")
-        data_docs = self.data_ref.get()
         indices = []
-        data = []
-        for doc in data_docs:
-            timestamp, datum = self._extract_row(doc)
+        data_list = []
+        for key, readings in data.items():
+            timestamp, values = self._extract_row(readings)
             indices.append(timestamp)
-            data.append(datum)
+            data_list.append(values)
         print("Data Loaded. Creating Data Frame...")
-        self.df = pd.DataFrame(data, columns=self.headers, index=indices)
-        return self.df
+        self.df = pd.DataFrame(data_list, columns=self.headers, index=indices)
 
-    def _extract_row(self, doc):
-        data = doc.to_dict()
-        t = pd.to_datetime(int(doc.id), unit='ms')
-        hr = data.get(self.HR, None)
-        o2 = data.get(self.O2, None)
-        red = data.get(self.RED_LED, None)
-        ir = data.get(self.IR_LED, None)
+    def _extract_row(self, readings):
+        t = pd.to_datetime(readings['timestamp'], unit='ms')
+        hr = readings.get(self.HR, None)
+        o2 = readings.get(self.O2, None)
+        red = readings.get(self.RED_LED, None)
+        ir = readings.get(self.IR_LED, None)
         return t, [hr, o2, red, ir]
 
 
 class Trial:
 
-    devices_collection = "devices"
     devices = None
 
-    def __init__(self, document):
-        data = document.to_dict()
-        self.start_date = create_date_from_millis(data['start'])
-        self.start_string = data['date']
-        self.end_date = create_date_from_millis(data['end'])
-        self.description = data['desc']
-        self.device_ref = document.reference.collection(self.devices_collection)
-
-    def get_devices(self):
-        print("Loading Devices...")
-        device_docs = self.device_ref.get()
-        devices = []
-        for doc in device_docs:
-            devices.append(Device(doc))
-        self.devices = devices
-        return self.devices
+    def __init__(self, trial_doc):
+        self.key = trial_doc.key()
+        trial_data = trial_doc.val()
+        self.start_date = create_date_from_millis(trial_data['start'])
+        self.start_string = trial_data['date']
+        self.end_date = create_date_from_millis(trial_data.get('end', None))
+        self.description = trial_data['desc']
 
     def __str__(self):
         return self.start_string + " - " + self.description
 
+    def load(self):
+        print("Loading Devices...")
+        device_docs = db.child("trials-data").child(self.key).child("devices").get()
+        devices = []
+        for doc in device_docs.each():
+            devices.append(Device(doc.val()))
+        self.devices = devices
 
-class Loader:
 
-    trials_collection = 'trials'
-    project_id = 'pulseoximeterapp'
-
-    def __init__(self):
-        cred = credentials.Certificate('./credentials.json')
-        firebase_admin.initialize_app(cred)
-        self.db = firestore.client()
-
-    def get_trials(self):
-        trials = []
-        trial_docs = self.db.collection(self.trials_collection).get()
-        for doc in trial_docs:
-            trials.append(Trial(doc))
-        return trials
+def fetch_trials():
+    trials = []
+    trial_docs = db.child('trials').get()
+    for trial_doc in trial_docs.each():
+        trials.append(Trial(trial_doc))
+    return trials
