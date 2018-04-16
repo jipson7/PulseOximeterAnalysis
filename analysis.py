@@ -24,7 +24,7 @@ def graph_devices(devices):
     ax.legend(legend)
     ax.set_xlabel("Time")
     ax.set_ylabel("Heart-Rate (BPM)   Oxygen Saturation (%)")
-    plt.savefig('./report/images/raw/trial-' + str(devices[0].trial.start_date.timestamp()) + '-plot-' + str(time.time()) + '.png')
+    plt.savefig('./report/images/raw/trial-' + str(devices[0].trial.description) + '-plot-' + str(time.time()) + '.png')
     plt.show()
 
 
