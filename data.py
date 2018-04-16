@@ -46,15 +46,15 @@ class Device:
         return s
 
     def _create_data_frame(self, data):
-        print("Loading data...")
+        print("Creating data frame...")
         indices = []
         data_list = []
         for key, readings in data.items():
             timestamp, values = self._extract_row(readings)
             indices.append(timestamp)
             data_list.append(values)
-        print("Data Loaded. Creating Data Frame...")
         self.df = pd.DataFrame(data_list, columns=self.headers, index=indices)
+        print("Data frame created.")
 
     def _extract_row(self, readings):
         t = pd.to_datetime(readings['timestamp'], unit='ms')
@@ -81,7 +81,6 @@ class Trial:
         return self.start_string + " - " + self.description
 
     def load(self):
-        print("Loading Devices...")
         device_docs = db.child("trials-data").child(self.key).child("devices").get()
         devices = []
         for doc in device_docs.each():
