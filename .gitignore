@@ -209,3 +209,6 @@ tags
 # End of https://www.gitignore.io/api/osx,vim,python,pycharm
 
 credentials.json
+
+#Raw images in report
+report/images/raw/*

@@ -1,11 +1,30 @@
 import matplotlib.pyplot as plt
-
+import numpy as np
+import time
 
 def graph_dfs(data_frames):
     """Graphs a list of data frames"""
     ax = data_frames[0].plot()
     for df in data_frames[1:]:
         df.plot(ax=ax, kind="line")
+    plt.show()
+
+
+def graph_devices(devices):
+    legend = []
+    ax = None
+    for device in devices:
+        df = prune_first_rows(device.df)
+        if ax is None:
+            ax = df.plot()
+        else:
+            df.plot(ax=ax)
+        legend.append(device.user_description + " HR")
+        legend.append(device.user_description + " Oxygen")
+    ax.legend(legend)
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Heart-Rate (BPM)   Oxygen Saturation (%)")
+    plt.savefig('./report/images/raw/trial-' + str(devices[0].trial.start_date.timestamp()) + '-plot-' + str(time.time()) + '.png')
     plt.show()
 
 
@@ -20,3 +39,17 @@ def get_intersection(df1, df2):
 
 def prune_first_rows(df, n=5):
     return df.iloc[n:]
+
+
+def convert_index_to_int(df):
+    idx = df.index.astype(np.int64)
+    new_idx = []
+    offset = None
+    for i in idx:
+        if offset is None:
+            offset = i
+            new_idx.append(0)
+        else:
+            new_idx.append(i - offset)
+    return df.set_index([new_idx])
+

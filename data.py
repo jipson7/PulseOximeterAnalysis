@@ -30,10 +30,12 @@ class Device:
     O2 = 'oxygen'
     RED_LED = 'red_led'
     IR_LED = 'ir_led'
+    TIMESTAMP = 'timestamp'
 
     headers = [HR, O2, RED_LED, IR_LED]
 
-    def __init__(self, device_data):
+    def __init__(self, device_data, trial):
+        self.trial = trial
         self.description = device_data['description']
         self.name = device_data['name']
         self.user_description = device_data.get('user_description', None)
@@ -63,7 +65,7 @@ class Device:
         print("Data frame created.")
 
     def _extract_row(self, readings):
-        t = readings['timestamp']
+        t = readings[self.TIMESTAMP]
         hr = readings.get(self.HR, None)
         o2 = readings.get(self.O2, None)
         red = readings.get(self.RED_LED, None)
@@ -90,7 +92,7 @@ class Trial:
         device_docs = db.child("trials-data").child(self.key).child("devices").get()
         devices = []
         for doc in device_docs.each():
-            devices.append(Device(doc.val()))
+            devices.append(Device(doc.val(), self))
         self.devices = devices
 
 
