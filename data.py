@@ -60,7 +60,7 @@ class Device:
             print("Timestamps are not sorted. Sorting.")
             timestamps, data_list = (list(t) for t in zip(*sorted(zip(timestamps, data_list))))
         assert(sorted(timestamps) == timestamps)
-        indices = pd.to_datetime(timestamps, unit='ms', errors='coerce')
+        indices = pd.to_datetime(timestamps, unit='ms')
         self.df = pd.DataFrame(data_list, columns=self.headers, index=indices)
         print("Data frame created.")
 
