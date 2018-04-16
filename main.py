@@ -23,8 +23,8 @@ if __name__ == "__main__":
         print("No trials to analyze")
         exit(0)
     trial.load()
-    df1 = trial.devices[0].df
-    df2 = trial.devices[1].df
+    df1 = analysis.prune_first_rows(trial.devices[0].df)
+    df2 = analysis.prune_first_rows(trial.devices[1].df)
     df1_i, df2_i = analysis.get_intersection(df1, df2)
     analysis.graph_dfs([df1_i, df2_i])
 

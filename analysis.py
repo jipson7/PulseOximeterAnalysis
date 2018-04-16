@@ -16,3 +16,7 @@ def get_intersection(df1, df2):
     df1_intersect = df1.loc[df_start: df_end]
     df2_intersect = df2.loc[df_start: df_end]
     return df1_intersect, df2_intersect
+
+
+def prune_first_rows(df, n=5):
+    return df.iloc[n:]

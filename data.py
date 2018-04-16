@@ -47,17 +47,23 @@ class Device:
 
     def _create_data_frame(self, data):
         print("Creating data frame...")
-        indices = []
+        timestamps = []
         data_list = []
         for key, readings in data.items():
             timestamp, values = self._extract_row(readings)
-            indices.append(timestamp)
+            timestamps.append(timestamp)
             data_list.append(values)
+        assert(len(timestamps) == len(set(timestamps)))  # No Duplicates
+        if sorted(timestamps) != timestamps:
+            print("Timestamps are not sorted. Sorting.")
+            timestamps, data_list = (list(t) for t in zip(*sorted(zip(timestamps, data_list))))
+        assert(sorted(timestamps) == timestamps)
+        indices = pd.to_datetime(timestamps, unit='ms', errors='coerce')
         self.df = pd.DataFrame(data_list, columns=self.headers, index=indices)
         print("Data frame created.")
 
     def _extract_row(self, readings):
-        t = pd.to_datetime(readings['timestamp'], unit='ms')
+        t = readings['timestamp']
         hr = readings.get(self.HR, None)
         o2 = readings.get(self.O2, None)
         red = readings.get(self.RED_LED, None)
