@@ -1,6 +1,7 @@
 import pyrebase
 from datetime import datetime
 import pandas as pd
+import keys
 
 config = {
   "apiKey": "AIzaSyBKkJ72xZVPA8CX4ETB2YVZ4gcBAfv1mIU",
@@ -25,17 +26,9 @@ class Device:
     data_collection = "data"
     df = None
 
-    # Keys
-    HR = 'hr'
-    O2 = 'oxygen'
-    RED_LED = 'red_led'
-    IR_LED = 'ir_led'
-    TIMESTAMP = 'timestamp'
+    headers = [keys.HR, keys.O2, keys.RED_LED, keys.IR_LED]
 
-    headers = [HR, O2, RED_LED, IR_LED]
-
-    def __init__(self, device_data, trial):
-        self.trial = trial
+    def __init__(self, device_data):
         self.description = device_data['description']
         self.name = device_data['name']
         self.user_description = device_data.get('user_description', None)
@@ -65,11 +58,11 @@ class Device:
         print("Data frame created.")
 
     def _extract_row(self, readings):
-        t = readings[self.TIMESTAMP]
-        hr = readings.get(self.HR, None)
-        o2 = readings.get(self.O2, None)
-        red = readings.get(self.RED_LED, None)
-        ir = readings.get(self.IR_LED, None)
+        t = readings[keys.TIMESTAMP]
+        hr = readings.get(keys.HR, None)
+        o2 = readings.get(keys.O2, None)
+        red = readings.get(keys.RED_LED, None)
+        ir = readings.get(keys.IR_LED, None)
         return t, [hr, o2, red, ir]
 
 
@@ -92,7 +85,7 @@ class Trial:
         device_docs = db.child("trials-data").child(self.key).child("devices").get()
         devices = []
         for doc in device_docs.each():
-            devices.append(Device(doc.val(), self))
+            devices.append(Device(doc.val()))
         self.devices = devices
 
 

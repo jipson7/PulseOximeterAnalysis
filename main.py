@@ -23,7 +23,7 @@ if __name__ == "__main__":
         print("No trials to analyze")
         exit(0)
     trial.load()
-    analysis.graph_devices(trial.devices)
+    analysis.graph_trial(trial)
 
 
 

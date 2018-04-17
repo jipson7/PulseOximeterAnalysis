@@ -1,6 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import time
+import time, keys
+
+hr_styles = ['r--', 'r-.', 'r:', 'r-']
+oxygen_styles = ['k--', 'k-.', 'k:', 'k-']
+
 
 def graph_dfs(data_frames):
     """Graphs a list of data frames"""
@@ -10,21 +14,26 @@ def graph_dfs(data_frames):
     plt.show()
 
 
-def graph_devices(devices):
-    legend = []
-    ax = None
-    for device in devices:
+def graph_trial(trial):
+    fig, ax1 = plt.subplots()
+    ax2 = ax1.twinx()
+    for device in trial.devices:
         df = prune_first_rows(device.df)
-        if ax is None:
-            ax = df.plot()
-        else:
-            df.plot(ax=ax)
-        legend.append(device.user_description + " HR")
-        legend.append(device.user_description + " Oxygen")
-    ax.legend(legend)
-    ax.set_xlabel("Time")
-    ax.set_ylabel("Heart-Rate (BPM)   Oxygen Saturation (%)")
-    plt.savefig('./report/images/raw/trial-' + str(devices[0].trial.description) + '-plot-' + str(time.time()) + '.png')
+        x_axis = df.index.values
+        hr_values = df[keys.HR]
+        oxygen_values = df[keys.O2]
+        ax1.plot(x_axis, oxygen_values, oxygen_styles.pop(), label='O2 - ' + device.user_description)
+        ax2.plot(x_axis, hr_values, hr_styles.pop(), label='HR - ' + device.user_description)
+
+    lines, labels = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax2.legend(lines + lines2, labels + labels2, loc=0)
+
+    ax1.set_xlabel("Time")
+    ax1.set_ylabel("Oxygen Saturation (%)")
+    ax2.set_ylabel("Heart-Rate (BPM)", color='r')
+    ax2.tick_params('y', colors='r')
+    plt.savefig('./report/images/raw/trial-' + str(trial.description) + '-plot-' + str(time.time()) + '.png')
     plt.show()
 
 
