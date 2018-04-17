@@ -31,8 +31,10 @@ def graph_trial(trial):
 
     ax1.set_xlabel("Time")
     ax1.set_ylabel("Oxygen Saturation (%)")
+    ax1.set_ylim(70, 100)
     ax2.set_ylabel("Heart-Rate (BPM)", color='r')
     ax2.tick_params('y', colors='r')
+    ax2.set_ylim(30, 100)
     plt.savefig('./report/images/raw/trial-' + str(trial.description) + '-plot-' + str(time.time()) + '.png')
     plt.show()
 
