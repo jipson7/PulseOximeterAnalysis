@@ -22,19 +22,20 @@ def graph_trial(trial):
         x_axis = df.index.values
         hr_values = df[keys.HR]
         oxygen_values = df[keys.O2]
-        ax1.plot(x_axis, oxygen_values, oxygen_styles.pop(), label='O2 - ' + device.user_description)
-        ax2.plot(x_axis, hr_values, hr_styles.pop(), label='HR - ' + device.user_description)
+        device_label = device.graph_name + ' - ' + device.user_description
+        ax1.plot(x_axis, oxygen_values, oxygen_styles.pop(), label='O2 - ' + device_label)
+        ax2.plot(x_axis, hr_values, hr_styles.pop(), label='HR - ' + device_label)
 
     lines, labels = ax1.get_legend_handles_labels()
     lines2, labels2 = ax2.get_legend_handles_labels()
-    ax2.legend(lines + lines2, labels + labels2, loc=0)
+    ax2.legend(lines + lines2, labels + labels2, loc=8)
 
     ax1.set_xlabel("Time")
     ax1.set_ylabel("Oxygen Saturation (%)")
-    ax1.set_ylim(70, 100)
+    ax1.set_ylim(bottom=70)
     ax2.set_ylabel("Heart-Rate (BPM)", color='r')
     ax2.tick_params('y', colors='r')
-    ax2.set_ylim(30, 100)
+    ax2.set_ylim(bottom=0)
     plt.savefig('./report/images/raw/trial-' + str(trial.description) + '-plot-' + str(time.time()) + '.png')
     plt.show()
 
