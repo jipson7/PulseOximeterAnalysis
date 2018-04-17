@@ -23,7 +23,8 @@ if __name__ == "__main__":
         print("No trials to analyze")
         exit(0)
     trial.load()
-    analysis.graph_trial(trial)
+    #analysis.graph_trial(trial)
+    analysis.print_correlations(trial)
 
 
 

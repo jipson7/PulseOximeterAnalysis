@@ -22,9 +22,8 @@ def graph_trial(trial):
         x_axis = df.index.values
         hr_values = df[keys.HR]
         oxygen_values = df[keys.O2]
-        device_label = device.graph_name + ' - ' + device.user_description
-        ax1.plot(x_axis, oxygen_values, oxygen_styles.pop(), label='O2 - ' + device_label)
-        ax2.plot(x_axis, hr_values, hr_styles.pop(), label='HR - ' + device_label)
+        ax1.plot(x_axis, oxygen_values, oxygen_styles.pop(), label='O2 - ' + str(device))
+        ax2.plot(x_axis, hr_values, hr_styles.pop(), label='HR - ' + str(device))
 
     lines, labels = ax1.get_legend_handles_labels()
     lines2, labels2 = ax2.get_legend_handles_labels()
@@ -38,6 +37,18 @@ def graph_trial(trial):
     ax2.set_ylim(bottom=0)
     plt.savefig('./report/images/raw/trial-' + str(trial.description) + '-plot-' + str(time.time()) + '.png')
     plt.show()
+
+
+def print_correlations(trial):
+    from itertools import combinations
+    for d1, d2 in combinations(trial.devices, 2):
+        method = 'pearson'
+        o2_corr = d1.df[keys.O2].corr(d2.df[keys.O2], method=method)
+        hr_corr = d1.df[keys.HR].corr(d2.df[keys.HR], method=method)
+        print("Devices: ")
+        print("(" + str(d1) + ") <=> (" + str(d2) + ")")
+        print("O2 Correlation (" + method + ") = " + str(o2_corr))
+        print("HR Correlation (" + method + ") = " + str(hr_corr))
 
 
 def get_intersection(df1, df2):
