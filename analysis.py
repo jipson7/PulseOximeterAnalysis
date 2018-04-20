@@ -42,9 +42,10 @@ def graph_trial(trial):
 
 def print_correlations(trial):
     for d1, d2 in trial.device_combinations():
+        df1, df2 = get_intersection(d1.df, d2.df)
         method = 'pearson'
-        o2_corr = d1.df[keys.O2].corr(d2.df[keys.O2], method=method)
-        hr_corr = d1.df[keys.HR].corr(d2.df[keys.HR], method=method)
+        o2_corr = df1[keys.O2].corr(df2[keys.O2], method=method)
+        hr_corr = df1[keys.HR].corr(df2[keys.HR], method=method)
         print("\nAnalyzing Device Correlations: ")
         print("(" + str(d1) + ") <=> (" + str(d2) + ")")
         print("O2 Correlation (" + method + ") = " + str(o2_corr))
