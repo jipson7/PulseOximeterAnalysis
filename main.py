@@ -13,6 +13,19 @@ def prompt_for_trial(trials):
         print(e)
 
 
+def prompt_for_action():
+    action = input("Would you like to analyze (a) or delete (d) this trial? : ")
+    action = action.strip()
+    if action == 'a':
+        return "ANALYZE"
+    elif action == 'd':
+        confirmation = input("If you're sure, type DELETE: ")
+        if confirmation.strip().upper() == "DELETE":
+            return "DELETE"
+    print("Invalid input")
+    exit(0)
+
+
 if __name__ == "__main__":
     trials = fetch_trials()
     if len(trials) > 1:
@@ -23,12 +36,18 @@ if __name__ == "__main__":
         print("No trials to analyze")
         exit(0)
 
-    trial.load()
+    print("Selected: " + str(trial))
 
-    print("\nAnalyzing Trial: " + str(trial))
-    analysis.graph_trial(trial)
-    analysis.print_correlations(trial)
-    analysis.print_stats(trial)
+    action = prompt_for_action()
+
+    if action == "ANALYZE":
+        trial.load()
+        print("\nAnalyzing Trial: " + str(trial))
+        analysis.graph_trial(trial)
+        analysis.print_correlations(trial)
+        analysis.print_stats(trial)
+    elif action == "DELETE":
+        trial.delete()
 
 
 

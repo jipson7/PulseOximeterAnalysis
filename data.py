@@ -97,6 +97,12 @@ class Trial:
         from itertools import combinations
         return combinations(self.devices, 2)
 
+    def delete(self):
+        print("Deleting " + str(self))
+        db.child("trials-data").child(self.key).remove()
+        db.child("trials").child(self.key).remove()
+        print("Delete successful")
+
 
 def fetch_trials():
     trials = []
