@@ -56,10 +56,10 @@ def print_stats(trial):
         hr = device.df[keys.HR]
         o2 = device.df[keys.O2]
         print("\n" + str(device) + " Stats: ")
-        print("HR Mean:    " + str(hr.mean()))
-        print("HR Std Dev: " + str(hr.std()))
-        print("O2 Mean:    " + str(o2.mean()))
-        print("O2 Std Dev: " + str(o2.std()))
+        print("HR Mean:    " + str(round(hr.mean(), 2)))
+        print("HR Std Dev: " + str(round(hr.std(), 2)))
+        print("O2 Mean:    " + str(round(o2.mean(), 2)))
+        print("O2 Std Dev: " + str(round(o2.std(), 2)))
 
 
 def get_intersection(df1, df2):
