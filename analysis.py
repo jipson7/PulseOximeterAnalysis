@@ -40,15 +40,25 @@ def graph_trial(trial):
 
 
 def print_correlations(trial):
-    from itertools import combinations
-    for d1, d2 in combinations(trial.devices, 2):
+    for d1, d2 in trial.device_combinations():
         method = 'pearson'
         o2_corr = d1.df[keys.O2].corr(d2.df[keys.O2], method=method)
         hr_corr = d1.df[keys.HR].corr(d2.df[keys.HR], method=method)
-        print("Devices: ")
+        print("\nAnalyzing Device Correlations: ")
         print("(" + str(d1) + ") <=> (" + str(d2) + ")")
         print("O2 Correlation (" + method + ") = " + str(o2_corr))
         print("HR Correlation (" + method + ") = " + str(hr_corr))
+
+
+def print_stats(trial):
+    for device in trial.devices:
+        hr = device.df[keys.HR]
+        o2 = device.df[keys.O2]
+        print("\n" + str(device) + " Stats: ")
+        print("HR Mean:    " + str(hr.mean()))
+        print("HR Std Dev: " + str(hr.std()))
+        print("O2 Mean:    " + str(o2.mean()))
+        print("O2 Std Dev: " + str(o2.std()))
 
 
 def get_intersection(df1, df2):

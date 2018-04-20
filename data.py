@@ -93,6 +93,10 @@ class Trial:
             devices.append(Device(doc.val()))
         self.devices = devices
 
+    def device_combinations(self):
+        from itertools import combinations
+        return combinations(self.devices, 2)
+
 
 def fetch_trials():
     trials = []
