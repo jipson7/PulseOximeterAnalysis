@@ -45,6 +45,7 @@ if __name__ == "__main__":
         print("\nAnalyzing Trial: " + str(trial))
         analysis.graph_trial(trial)
         analysis.print_correlations(trial)
+        analysis.print_errors(trial)
         analysis.print_stats(trial)
     elif action == "DELETE":
         trial.delete()

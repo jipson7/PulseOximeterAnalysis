@@ -1,6 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import time, keys
+import time
+import keys
+import datetime
+import math
+
 
 hr_styles = ['r--', 'r-.', 'r:', 'r-']
 oxygen_styles = ['k--', 'k-.', 'k:', 'k-']
@@ -52,6 +56,35 @@ def print_correlations(trial):
         print("HR Correlation (" + method + ") = " + str(hr_corr))
 
 
+def print_errors(trial):
+    sample_range = datetime.timedelta(milliseconds=20)
+    hr_errors = []
+    o2_errors = []
+    n = 0.0
+    for d1, d2 in trial.device_combinations():
+        print("\nAnalyzing Device Errors: ")
+        print("(" + str(d1) + ") <=> (" + str(d2) + ")")
+        df_start, df_end = get_common_endpoints(d1.df, d2.df)
+        sample_date = df_start
+        while sample_date < df_end:
+            data1 = d1.df.iloc[d1.df.index.get_loc(sample_date, method='nearest')]
+            data2 = d2.df.iloc[d2.df.index.get_loc(sample_date, method='nearest')]
+            hr_1, hr_2 = data1[keys.HR], data2[keys.HR]
+            o2_1, o2_2 = data1[keys.O2], data2[keys.O2]
+            hr_errors.append(hr_1 - hr_2)
+            o2_errors.append(o2_1 - o2_2)
+            n += 1
+            sample_date += sample_range
+        hr_rmse = math.sqrt(sum([x ** 2.0 for x in hr_errors]) / n)
+        o2_rmse = math.sqrt(sum([x ** 2.0 for x in o2_errors]) / n)
+        print("RMSE HR: " + str(hr_rmse))
+        print("RMSE O2: " + str(o2_rmse))
+        hr_mae = sum([abs(x) for x in hr_errors]) / n
+        o2_mae = sum([abs(x) for x in o2_errors]) / n
+        print("MAE HR: " + str(hr_mae))
+        print("MAE O2: " + str(o2_mae))
+
+
 def print_stats(trial):
     for device in trial.devices:
         hr = device.df[keys.HR]
@@ -65,11 +98,16 @@ def print_stats(trial):
 
 def get_intersection(df1, df2):
     """Returns the two data frames, trimmed to the common overlap between them"""
-    df_start = df1.index[0] if (df1.index[0] > df2.index[0]) else df2.index[0]
-    df_end = df1.index[-1] if (df1.index[-1] < df2.index[-1]) else df2.index[-1]
+    df_start, df_end = get_common_endpoints(df1, df2)
     df1_intersect = df1.loc[df_start: df_end]
     df2_intersect = df2.loc[df_start: df_end]
     return df1_intersect, df2_intersect
+
+
+def get_common_endpoints(df1, df2):
+    df_start = df1.index[0] if (df1.index[0] > df2.index[0]) else df2.index[0]
+    df_end = df1.index[-1] if (df1.index[-1] < df2.index[-1]) else df2.index[-1]
+    return df_start, df_end
 
 
 def prune_first_rows(df, n=5):
