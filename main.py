@@ -14,7 +14,7 @@ def prompt_for_trial(trials):
 
 
 def prompt_for_action():
-    action = input("Would you like to analyze (a) or delete (d) this trial? : ")
+    action = input("Would you like to analyze (a), run learning (l) algorithm, or delete (d) this trial? : ")
     action = action.strip()
     if action == 'a':
         return "ANALYZE"
@@ -22,6 +22,8 @@ def prompt_for_action():
         confirmation = input("If you're sure, type DELETE: ")
         if confirmation.strip().upper() == "DELETE":
             return "DELETE"
+    elif action == 'l':
+        return 'LEARN'
     print("Invalid input")
     exit(0)
 
@@ -49,6 +51,10 @@ if __name__ == "__main__":
         analysis.print_stats(trial)
     elif action == "DELETE":
         trial.delete()
+    elif action == 'LEARN':
+        trial.load()
+        import learn
+        learn.create_samples(trial)
 
 
 
