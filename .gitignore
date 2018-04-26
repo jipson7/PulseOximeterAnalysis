@@ -212,3 +212,6 @@ credentials.json
 
 #Raw images in report
 report/images/raw/*
+
+#Trial data caching
+trial_cache

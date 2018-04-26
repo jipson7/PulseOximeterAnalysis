@@ -63,7 +63,7 @@ if __name__ == "__main__":
     elif action == 'LEARN':
         trial.load()
         import learn
-        learn.create_samples(trial)
+        learn.run(trial)
     elif action == 'CREATE':
         trial.load()
         filename = './data.csv'

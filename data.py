@@ -3,6 +3,9 @@ import datetime
 import pandas as pd
 import keys
 import numpy as np
+import pickle
+
+import os.path
 
 config = {
   "apiKey": "AIzaSyBKkJ72xZVPA8CX4ETB2YVZ4gcBAfv1mIU",
@@ -89,19 +92,30 @@ class Trial:
         self.start_string = trial_data['date']
         self.end_date = create_date_from_millis(trial_data.get('end', None))
         self.description = trial_data['desc']
+        self.pickle_path = 'trial_cache/' + str(self.start_date)
 
     def __str__(self):
         return self.start_string + " - " + self.description
 
     def load(self):
-        print("Loading data")
-        device_docs = db.child("trials-data").child(self.key).child("devices").get()
-        devices = []
-        for doc in device_docs.each():
-            devices.append(Device(doc.val()))
-        self.devices = devices
-        self._normalize_device_timestamps()
+        if os.path.isfile(self.pickle_path):
+            print("Loading data from pickle")
+            self.devices = pickle.load(open(self.pickle_path, 'rb'))
+        else:
+            print("Loading data from server")
+            device_docs = db.child("trials-data").child(self.key).child("devices").get()
+            devices = []
+            for doc in device_docs.each():
+                devices.append(Device(doc.val()))
+            self.devices = devices
+            self._normalize_device_timestamps()
+            self._pickle()
         print("Data loaded.")
+
+    def _pickle(self):
+        print("Pickling data.")
+        pickle.dump(self.devices, open(self.pickle_path, 'wb'))
+
 
     def _normalize_device_timestamps(self):
         print("Normalizing dataframes between devices")
