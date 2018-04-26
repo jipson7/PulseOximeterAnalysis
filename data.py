@@ -116,7 +116,6 @@ class Trial:
         print("Pickling data.")
         pickle.dump(self.devices, open(self.pickle_path, 'wb'))
 
-
     def _normalize_device_timestamps(self):
         print("Normalizing dataframes between devices")
         sample_range = datetime.timedelta(milliseconds=40)
