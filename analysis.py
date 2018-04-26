@@ -17,12 +17,21 @@ def graph_dfs(data_frames):
     plt.show()
 
 
-def graph_led_traces(device):
-    red_trace = device.df[keys.RED_LED].iloc[0:100]
+def graph_led_traces(device, full_trace=False, same_graph=True):
+
+    red_trace = device.df[keys.RED_LED]
+    ir_trace = device.df[keys.IR_LED]
+    if not full_trace:
+        # 500 frames = 20 seconds
+        red_trace = red_trace.iloc[0:500]
+        ir_trace = ir_trace.iloc[0:500]
     red_trace.plot(title="Red LED")
-    plt.figure()
-    ir_trace = device.df[keys.IR_LED].iloc[0:100]
-    ir_trace.plot(title="IR LED")
+
+    if same_graph:
+        ir_trace.plot(title="RED and IR LED")
+    else:
+        plt.figure()
+        ir_trace.plot(title="IR LED")
     plt.show()
 
 
