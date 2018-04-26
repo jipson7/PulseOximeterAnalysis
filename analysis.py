@@ -17,6 +17,15 @@ def graph_dfs(data_frames):
     plt.show()
 
 
+def graph_led_traces(device):
+    red_trace = device.df[keys.RED_LED].iloc[0:100]
+    red_trace.plot(title="Red LED")
+    plt.figure()
+    ir_trace = device.df[keys.IR_LED].iloc[0:100]
+    ir_trace.plot(title="IR LED")
+    plt.show()
+
+
 def graph_trial(trial):
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()

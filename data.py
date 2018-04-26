@@ -135,16 +135,25 @@ class Trial:
         db.child("trials").child(self.key).remove()
         print("Delete successful")
 
+    def get_flora(self):
+        for device in self.devices:
+            if device.name == 'Flora':
+                return device
+        raise Exception('Flora not found')
+
+    def get_ground_truth(self):
+        for device in self.devices:
+            if device.name == 'USBUART':
+                return device
+        raise Exception('Ground truth not found')
+
     def dump_csv(self, filename):
         print("Outputting to file: " + filename)
         columns = ['red_led', 'ir_led']
-        for device in self.devices:
-            if device.name == 'Flora':
-                device.convert_index_to(np.int64)
-                device.df.to_csv(path_or_buf=filename, columns=columns, header=False, index=False)
-                print("CSV file created")
-                return
-        print("Device not found")
+        device = self.get_flora()
+        device.convert_index_to(np.int64)
+        device.df.to_csv(path_or_buf=filename, columns=columns, header=False, index=False)
+        print("CSV file created")
 
 
 def fetch_trials():

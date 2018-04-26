@@ -18,6 +18,7 @@ def prompt_for_action():
                    "(a) analyze the data, \n"
                    "(l) run learning algorithm, \n"
                    "(c) create a csv, \n"
+                   "(t) view led traces, \n"
                    "(d) or delete this trial? ")
     action = action.strip()
     if action == 'a':
@@ -30,6 +31,8 @@ def prompt_for_action():
         return 'LEARN'
     elif action == 'c':
         return 'CREATE'
+    elif action == 't':
+        return 'TRACE'
     print("Invalid input")
     exit(0)
 
@@ -65,6 +68,10 @@ if __name__ == "__main__":
         trial.load()
         filename = './data.csv'
         trial.dump_csv(filename)
+    elif action == "TRACE":
+        trial.load()
+        analysis.graph_led_traces(trial.get_flora())
+
 
 
 
