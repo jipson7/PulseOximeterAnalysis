@@ -14,7 +14,11 @@ def prompt_for_trial(trials):
 
 
 def prompt_for_action():
-    action = input("Would you like to analyze (a), run learning (l) algorithm, or delete (d) this trial? : ")
+    action = input("Would you like to \n"
+                   "(a) analyze the data, \n"
+                   "(l) run learning algorithm, \n"
+                   "(c) create a csv, \n"
+                   "(d) or delete this trial? ")
     action = action.strip()
     if action == 'a':
         return "ANALYZE"
@@ -24,6 +28,8 @@ def prompt_for_action():
             return "DELETE"
     elif action == 'l':
         return 'LEARN'
+    elif action == 'c':
+        return 'CREATE'
     print("Invalid input")
     exit(0)
 
@@ -55,6 +61,10 @@ if __name__ == "__main__":
         trial.load()
         import learn
         learn.create_samples(trial)
+    elif action == 'CREATE':
+        trial.load()
+        filename = './data.csv'
+        trial.dump_csv(filename)
 
 
 
