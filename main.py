@@ -61,9 +61,15 @@ if __name__ == "__main__":
     elif action == "DELETE":
         trial.delete()
     elif action == 'LEARN':
-        trial.load()
+        combine = input("Combine data from all trials to train? (y), (n)")
+        if combine.strip().lower() == 'y':
+            learning_trials = trials[2:]
+        else:
+            learning_trials = [trial]
         import learn
-        learn.run(trial)
+        for t in learning_trials:
+            t.load()
+        learn.run(learning_trials)
     elif action == 'CREATE':
         trial.load()
         filename = './data.csv'

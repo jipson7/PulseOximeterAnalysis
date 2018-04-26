@@ -1,7 +1,7 @@
 import keys
 import datetime
 import numpy as np
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import *
 from sklearn.model_selection import cross_val_score, train_test_split
 
 
@@ -26,16 +26,25 @@ def prepare_data(truth, sensor):
     return np.array(X), np.array(y)
 
 
-def run(trial):
-    truth = trial.get_ground_truth()
-    sensor = trial.get_flora()
-    X, y = prepare_data(truth, sensor)
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.25, random_state=42)
+def run(trials):
+    X = None
+    y = None
+    for trial in trials:
+        print("Prepping data for trial: " + str(trial))
+        truth = trial.get_ground_truth()
+        sensor = trial.get_flora()
+        _X, _y = prepare_data(truth, sensor)
+        if X is None:
+            X, y = _X, _y
+        else:
+            X = np.concatenate([X, _X])
+            y = np.concatenate([y, _y])
 
-    model = LinearRegression()
-    model.fit(X_train, y_train)
-    y_predicted = model.predict(X_test)
-    print(y_predicted)
-    for j, k in zip(y_predicted, y_test):
-        print("Predicted: " + str(int(round(j))) + ", Actual: " + str(int(round(k))))
+    models = [LinearRegression(),
+              Ridge(),
+              Lasso()]
+    for model in models:
+        print("Analyzing :" + str(model.__class__.__name__))
+        scores = cross_val_score(model, X, y, n_jobs=8)
+        print(scores)
+

@@ -23,8 +23,8 @@ def graph_led_traces(device, full_trace=False, same_graph=True):
     ir_trace = device.df[keys.IR_LED]
     if not full_trace:
         # 500 frames = 20 seconds
-        red_trace = red_trace.iloc[0:500]
-        ir_trace = ir_trace.iloc[0:500]
+        red_trace = red_trace.iloc[1000:1500]
+        ir_trace = ir_trace.iloc[1000:1500]
     red_trace.plot(title="Red LED")
 
     if same_graph:
