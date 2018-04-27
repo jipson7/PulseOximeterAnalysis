@@ -8,13 +8,9 @@ from sklearn.linear_model import *
 from sklearn.model_selection import cross_val_score, cross_val_predict, GridSearchCV
 from sklearn.svm import SVC
 from sklearn.ensemble import *
+from sklearn.utils import shuffle
 
-WINDOW_SIZE = 4  # Seconds
-
-regression_models = [LinearRegression(normalize=True), Ridge(normalize=True),
-                     RandomForestRegressor()]
-
-classification_models = [LogisticRegression(), RandomForestClassifier(n_estimators=5, criterion='entropy')]
+WINDOW_SIZE = 1  # Seconds
 
 
 def prepare_data(sensor):
@@ -85,11 +81,11 @@ def count_labels(y):
     print("Labels in classifier: " + str(x))
 
 
-def load_data(trials, regression):
+def load_data(trials, regression=False):
     X = None
     y = None
     pickle_name = '-'.join([str(trial.start_date) for trial in trials])
-    pickle_name = 'cache/learn-' + pickle_name + str(regression)
+    pickle_name = 'cache/learn-' + pickle_name + str(regression) + "-" + str(WINDOW_SIZE)
 
     if os.path.isfile(pickle_name):
         print("Loading data from pickle")
@@ -109,40 +105,54 @@ def load_data(trials, regression):
             else:
                 X = np.concatenate([X, _X])
                 y = np.concatenate([y, _y])
+        X, y = shuffle(X, y, random_state=42)
         print("Pickling data.")
         pickle.dump((X, y), open(pickle_name, 'wb'))
     return X, y
 
 
-def run_model_comparison(trials, regression=False):
-    X, y = load_data(trials, regression)
+def run_regression(trials):
+    X, y = load_data(trials, regression=True)
+    models = [LinearRegression(normalize=True), Ridge(normalize=True),
+              RandomForestRegressor()]
+    plot_predictions(models, X, y)
+    get_scores(models, X, y)
 
-    if regression:
-        models = regression_models
-        plot_predictions(models, X, y)
-    else:
-        models = classification_models
-        count_labels(y)
+
+def run_classifiers(trials):
+    X, y = load_data(trials, False)
+    print("Tuning Classifiers")
+    count_labels(y)
+    models = []
+
+    rf_params = {'n_estimators': range(1, 20), 'criterion': ['gini', 'entropy']}
+    rf_optimal = _tune_classifier(RandomForestClassifier(), rf_params, X, y)
+    models.append(RandomForestClassifier(**rf_optimal))
+
+    # svm_params = {'C': [0.001, 0.01, 0.1, 1, 10], 'gamma': [0.001, 0.01, 0.1, 1]}
+    # svm_optimal = _tune_classifier(SVC(), svm_params, X, y)
+    # models.append(SVC())
+
+    # lr_params = {'penalty': ['l1', 'l2']}
+    # lr_optimal = _tune_classifier(LogisticRegression(), lr_params, X, y)
+    # models.append(LogisticRegression(**lr_optimal))
 
     get_scores(models, X, y)
 
 
-def tune_random_forest(trials):
-    X, y = load_data(trials, False)
-    params = {'n_estimators': range(1, 20), 'criterion': ['gini', 'entropy']}
-    clf = GridSearchCV(RandomForestClassifier(), params, n_jobs=8, verbose=2)
-    print("Brute forcing Random Forest Params...")
+def _tune_classifier(cls, params, X, y):
+    name = str(cls.__class__.__name__)
+    clf = GridSearchCV(cls, params, n_jobs=8, verbose=2)
+    print("Brute forcing " + name + " Params...")
     clf.fit(X, y)
     print("Best parameters set found on development set:")
     print(clf.best_params_)
+    return clf.best_params_
 
 
-def tune_svm(trials):
-    # TODO BROKEN
+def run_logistic_classifier(trials):
     X, y = load_data(trials, False)
-    params = {'kernel': ['rbf', 'linear']}
-    clf = GridSearchCV(SVC(), params, n_jobs=8, verbose=2)
-    print("Brute forcing SVM Params...")
-    clf.fit(X, y)
-    print("Best parameters set found on development set:")
-    print(clf.best_params_)
+    count_labels(y)
+    model = LogisticRegression(penalty='l1')
+    scores = cross_val_score(model, X, y, n_jobs=8, cv=5)
+    print(scores)

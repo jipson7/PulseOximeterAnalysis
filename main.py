@@ -61,7 +61,7 @@ if __name__ == "__main__":
     elif action == "DELETE":
         trial.delete()
     elif action == 'LEARN':
-        combine = input("Combine data from all trials to train? (y), (n)")
+        combine = input("Combine data from all trials to train? (y), (n): ")
         if combine.strip().lower() == 'y':
             # Custom selection of trials
             learning_trials = trials[2:]
@@ -72,12 +72,11 @@ if __name__ == "__main__":
             t.load()
         reg = input("Regression (r) or classification (c)? ")
         if reg.strip().lower() == 'r':
-            learn.run_model_comparison(learning_trials, regression=True)
+            learn.run_regression(learning_trials)
         else:
-            #TODO Remove
-            learn.tune_svm(learning_trials)
-            #learn.tune_random_forest(learning_trials)
-            #learn.run_model_comparison(learning_trials)
+            # TODO remove
+            learn.run_classifiers(learning_trials)
+            #learn.run_logistic_classifier(learning_trials)
     elif action == 'CREATE':
         trial.load()
         filename = './data.csv'
