@@ -63,13 +63,21 @@ if __name__ == "__main__":
     elif action == 'LEARN':
         combine = input("Combine data from all trials to train? (y), (n)")
         if combine.strip().lower() == 'y':
+            # Custom selection of trials
             learning_trials = trials[2:]
         else:
             learning_trials = [trial]
         import learn
         for t in learning_trials:
             t.load()
-        learn.run(learning_trials)
+        reg = input("Regression (r) or classification (c)? ")
+        if reg.strip().lower() == 'r':
+            learn.run_model_comparison(learning_trials, regression=True)
+        else:
+            #TODO Remove
+            learn.tune_svm(learning_trials)
+            #learn.tune_random_forest(learning_trials)
+            #learn.run_model_comparison(learning_trials)
     elif action == 'CREATE':
         trial.load()
         filename = './data.csv'

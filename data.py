@@ -92,7 +92,7 @@ class Trial:
         self.start_string = trial_data['date']
         self.end_date = create_date_from_millis(trial_data.get('end', None))
         self.description = trial_data['desc']
-        self.pickle_path = 'trial_cache/' + str(self.start_date)
+        self.pickle_path = 'cache/' + str(self.start_date)
 
     def __str__(self):
         return self.start_string + " - " + self.description
