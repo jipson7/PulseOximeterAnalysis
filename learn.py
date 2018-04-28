@@ -35,7 +35,7 @@ def prepare_regression_labels(truth):
         window_end = i + window_range
         if window_end > end:
             break
-        label = truth.df.loc[i:window_end, keys.O2].mean()
+        label = truth.df.loc[i:window_end, keys.O2].iloc[-1]
         y.append(label)
     return np.array(y)
 
@@ -48,8 +48,8 @@ def prepare_classification_labels(sensor, truth):
         window_end = i + window_range
         if window_end > end:
             break
-        actual = truth.df.loc[i:window_end, keys.O2].mean()
-        expected = sensor.df.loc[i:window_end, keys.O2].mean()
+        actual = truth.df.loc[i:window_end, keys.O2].iloc[-1]
+        expected = sensor.df.loc[i:window_end, keys.O2].iloc[-1]
         is_valid = (abs(actual - expected) <= 1)
         y.append(is_valid)
     return np.array(y)
