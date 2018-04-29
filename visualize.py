@@ -35,7 +35,7 @@ def visualize_model_predictions(model, trial):
     for y_true, y_pred in zip(y, y_predicted):
         y_true = "Reliable" if y_true else "Unreliable"
         y_pred = "Reliable" if y_pred else "Unreliable"
-        text.append("Reading: " + y_true + ", Predicted to: " + y_pred)
+        text.append("Reading: " + y_true + ", Prediction: " + y_pred)
 
     trace_red = go.Scatter(
         name='Red LED',

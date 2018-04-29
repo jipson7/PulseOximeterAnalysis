@@ -60,9 +60,8 @@ def prepare_classification_labels(sensor, truth):
 def get_scores(models, X, y):
     for model in models:
         name = str(model.__class__.__name__)
-        print("Scoring :" + name)
         scores = cross_val_score(model, X, y, n_jobs=8)
-        print(scores)
+        print(name + " score : " + sum(scores)/len(scores))
 
 
 def visualize_regression(models, X, y):
@@ -126,7 +125,7 @@ def run_classifiers(trials):
     print("Tuning Classifiers")
     models = []
 
-    rf_params = {'n_estimators': range(5, 20), 'criterion': ['entropy']}
+    rf_params = {'n_estimators': range(1, 20), 'criterion': ['gini','entropy']}
     rf_optimal = _tune_classifier(RandomForestClassifier(), rf_params, X, y)
     models.append(RandomForestClassifier(**rf_optimal))
 

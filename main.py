@@ -66,14 +66,15 @@ if __name__ == "__main__":
     elif action == "DELETE":
         trial.delete()
     elif action == 'LEARN':
-        combine = input("Combine data from all trials to train? (y), (n): ")
-        if combine.strip().lower() == 'y':
-            # Custom selection of trials
-            learning_trials = trials[2:]
-        else:
-            learning_trials = [trial]
+        learning_trials = [trial]
+        selection = input("Select other trials to include in training (numeric values separated by spaces): ")
+        indices = [int(x) for x in selection.split()]
+        for i in indices:
+            learning_trials.append(trials[i])
+
         for t in learning_trials:
             t.load()
+
         reg = input("Regression (r) or classification (c)? ")
         if reg.strip().lower() == 'r':
             learn.run_regression(learning_trials)
