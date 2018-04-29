@@ -61,7 +61,7 @@ def get_scores(models, X, y):
     for model in models:
         name = str(model.__class__.__name__)
         scores = cross_val_score(model, X, y, n_jobs=8)
-        print(name + " score : " + sum(scores)/len(scores))
+        print(name + " score : " + str(sum(scores)/len(scores)))
 
 
 def visualize_regression(models, X, y):
@@ -149,6 +149,8 @@ def pickle_model(trials):
     rf_params = {'n_estimators': range(5, 20), 'criterion': ['entropy']}
     rf_optimal = _tune_classifier(RandomForestClassifier(), rf_params, X, y)
     model = RandomForestClassifier(**rf_optimal)
+    print("Scoring model")
+    get_scores([model], X, y)
     print("Fitting model")
     model.fit(X, y)
     print("Pickling model")

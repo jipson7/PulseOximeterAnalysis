@@ -19,6 +19,12 @@ def print_stats(y_true, y_pred):
 
 
 def visualize_model_predictions(model, trial):
+
+    num_minutes = 2
+    NUM_FRAMES_TO_PLOT = int((num_minutes * 1000) / 40.0)
+
+    print("Prepping data for plot.")
+
     X, y = learn.load_data([trial], regression=False)
     y_predicted = model.predict(X)
     print_stats(y, y_predicted)
@@ -30,6 +36,11 @@ def visualize_model_predictions(model, trial):
         ir = row[-1]
         red_led.append(red)
         ir_led.append(ir)
+
+    red_led = red_led[0:NUM_FRAMES_TO_PLOT]
+    ir_led = ir_led[0:NUM_FRAMES_TO_PLOT]
+    y = y[0:NUM_FRAMES_TO_PLOT]
+    y_predicted = y_predicted[0:NUM_FRAMES_TO_PLOT]
 
     text = []
     for y_true, y_pred in zip(y, y_predicted):
@@ -46,6 +57,9 @@ def visualize_model_predictions(model, trial):
         marker=dict(
             color='red'
         ),
+        line=dict(
+            shape='spline'
+        )
     )
 
     trace_ir = go.Scatter(
@@ -57,10 +71,23 @@ def visualize_model_predictions(model, trial):
         marker=dict(
             color='blue'
         ),
+        line=dict(
+            shape='spline'
+        )
     )
 
     data = [trace_red, trace_ir]
 
+    layout = go.Layout(
+        xaxis=dict(
+            autorange=True,
+            range=[0, 10],
+            rangeslider=dict(autorange=True, range=[0, 10])
+        )
+    )
+
     filename = str(trial) + "-" + model.__class__.__name__
 
-    py.iplot(data, filename=filename)
+    print("Sending Plot to server")
+    py.iplot(data, filename=filename, layout=layout)
+    print("Plot created.")
