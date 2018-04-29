@@ -166,11 +166,3 @@ def _tune_classifier(cls, params, X, y):
     print("Best parameters set found on development set:")
     print(clf.best_params_)
     return clf.best_params_
-
-
-def run_logistic_classifier(trials):
-    X, y = load_data(trials, False)
-    count_labels(y)
-    model = LogisticRegression(penalty='l1')
-    scores = cross_val_score(model, X, y, n_jobs=8, cv=5)
-    print(scores)

@@ -18,7 +18,6 @@ def graph_dfs(data_frames):
 
 
 def graph_led_traces(device, full_trace=False, same_graph=True):
-
     red_trace = device.df[keys.RED_LED]
     ir_trace = device.df[keys.IR_LED]
     if not full_trace:
@@ -57,7 +56,7 @@ def graph_trial(trial):
     ax2.set_ylabel("Heart-Rate (BPM)", color='r')
     ax2.tick_params('y', colors='r')
     ax2.set_ylim(bottom=0)
-    plt.savefig('./report/images/raw/trial-' + str(trial.description) + '-plot-' + str(time.time()) + '.png')
+    #plt.savefig('./report/images/raw/trial-' + str(trial.description) + '-plot-' + str(time.time()) + '.png')
     plt.show()
 
 

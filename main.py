@@ -99,6 +99,7 @@ if __name__ == "__main__":
             model = pickle.load(open(learn.PICKLED_MODEL, 'rb'))
         except FileNotFoundError:
             print("Must pickle a model before visualizing. Run learning directive.")
+            exit(0)
         from visualize import visualize_model_predictions
         visualize_model_predictions(model, trial)
 
