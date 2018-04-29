@@ -12,6 +12,8 @@ from sklearn.utils import shuffle
 
 WINDOW_SIZE = 1  # Seconds
 
+PICKLED_MODEL = 'cache/model.pickle'
+
 
 def prepare_data(sensor):
     end = sensor.df.index.max()
@@ -63,7 +65,7 @@ def get_scores(models, X, y):
         print(scores)
 
 
-def plot_predictions(models, X, y):
+def visualize_regression(models, X, y):
     for model in models:
         name = str(model.__class__.__name__)
         y_predicted = cross_val_predict(model, X, y, n_jobs=8)
@@ -78,7 +80,7 @@ def plot_predictions(models, X, y):
 def count_labels(y):
     unique, counts = np.unique(y, return_counts=True)
     x = dict(zip(unique, counts))
-    print("Labels in classifier: " + str(x))
+    print("Labels Counts: " + str(x))
 
 
 def load_data(trials, regression=False):
@@ -115,29 +117,44 @@ def run_regression(trials):
     X, y = load_data(trials, regression=True)
     models = [LinearRegression(normalize=True), Ridge(normalize=True),
               RandomForestRegressor()]
-    plot_predictions(models, X, y)
+    visualize_regression(models, X, y)
     get_scores(models, X, y)
 
 
 def run_classifiers(trials):
     X, y = load_data(trials, False)
     print("Tuning Classifiers")
-    count_labels(y)
     models = []
 
-    rf_params = {'n_estimators': range(1, 20), 'criterion': ['gini', 'entropy']}
+    rf_params = {'n_estimators': range(5, 20), 'criterion': ['entropy']}
     rf_optimal = _tune_classifier(RandomForestClassifier(), rf_params, X, y)
     models.append(RandomForestClassifier(**rf_optimal))
 
-    # svm_params = {'C': [0.001, 0.01, 0.1, 1, 10], 'gamma': [0.001, 0.01, 0.1, 1]}
-    # svm_optimal = _tune_classifier(SVC(), svm_params, X, y)
-    # models.append(SVC())
+    #svm_params = {'C': [0.001, 0.01, 0.1, 1, 10], 'gamma': [0.001, 0.01, 0.1, 1]}
+    #svm_optimal = _tune_classifier(SVC(), svm_params, X, y)
+    #models.append(SVC())
 
-    # lr_params = {'penalty': ['l1', 'l2']}
-    # lr_optimal = _tune_classifier(LogisticRegression(), lr_params, X, y)
-    # models.append(LogisticRegression(**lr_optimal))
+    lr_params = {'penalty': ['l1', 'l2']}
+    lr_optimal = _tune_classifier(LogisticRegression(), lr_params, X, y)
+    models.append(LogisticRegression(**lr_optimal))
+
+    count_labels(y)
 
     get_scores(models, X, y)
+
+
+def pickle_model(trials):
+    X, y = load_data(trials, False)
+    print("Creating optimal Random Forest Model")
+    count_labels(y)
+    rf_params = {'n_estimators': range(5, 20), 'criterion': ['entropy']}
+    rf_optimal = _tune_classifier(RandomForestClassifier(), rf_params, X, y)
+    model = RandomForestClassifier(**rf_optimal)
+    print("Fitting model")
+    model.fit(X, y)
+    print("Pickling model")
+    pickle.dump(model, open(PICKLED_MODEL, 'wb'))
+    print("Done.")
 
 
 def _tune_classifier(cls, params, X, y):

@@ -1,5 +1,7 @@
 from data import fetch_trials
 import analysis
+import learn
+import pickle
 
 
 def prompt_for_trial(trials):
@@ -19,6 +21,7 @@ def prompt_for_action():
                    "(l) run learning algorithm, \n"
                    "(c) create a csv, \n"
                    "(t) view led traces, \n"
+                   "(v) visualize the applied model, \n"
                    "(d) or delete this trial? ")
     action = action.strip()
     if action == 'a':
@@ -33,6 +36,8 @@ def prompt_for_action():
         return 'CREATE'
     elif action == 't':
         return 'TRACE'
+    elif action == 'v':
+        return 'VISUALIZE'
     print("Invalid input")
     exit(0)
 
@@ -67,16 +72,19 @@ if __name__ == "__main__":
             learning_trials = trials[2:]
         else:
             learning_trials = [trial]
-        import learn
         for t in learning_trials:
             t.load()
         reg = input("Regression (r) or classification (c)? ")
         if reg.strip().lower() == 'r':
             learn.run_regression(learning_trials)
         else:
-            # TODO remove
-            learn.run_classifiers(learning_trials)
-            #learn.run_logistic_classifier(learning_trials)
+            analyze = input("Would you like to \n"
+                            "(c) compare models, \n"
+                            "(p) or pickle for testing? ")
+            if analyze.strip().lower() == 'c':
+                learn.run_classifiers(learning_trials)
+            else:
+                learn.pickle_model(learning_trials)
     elif action == 'CREATE':
         trial.load()
         filename = './data.csv'
@@ -84,6 +92,14 @@ if __name__ == "__main__":
     elif action == "TRACE":
         trial.load()
         analysis.graph_led_traces(trial.get_flora())
+    elif action == "VISUALIZE":
+        trial.load()
+        try:
+            model = pickle.load(open(learn.PICKLED_MODEL, 'rb'))
+        except FileNotFoundError:
+            print("Must pickle a model before visualizing. Run learning directive.")
+        from visualize import visualize_model_predictions
+        visualize_model_predictions(model, trial)
 
 
 
