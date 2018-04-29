@@ -24,6 +24,11 @@ def visualize_model_predictions(model, trial):
     y_predicted = model.predict(X)
     print_stats(y, y_predicted)
 
+    prompt = input("Would you like to create traces images? (y or n) ")
+
+    if prompt.strip().lower() != 'y':
+        return
+
     file_num = 0
     root_folder = 'results/'
 
