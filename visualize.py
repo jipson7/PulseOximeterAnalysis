@@ -1,7 +1,8 @@
 import learn
+import numpy as np
+import math
 import matplotlib.pyplot as plt
-from sklearn.metrics import accuracy_score, classification_report
-
+from sklearn.metrics import accuracy_score, classification_report, mean_squared_error
 
 def print_stats(y_true, y_pred):
     print("True label counts")
@@ -16,12 +17,20 @@ def print_stats(y_true, y_pred):
     print(classification_report(y_true, y_pred))
 
 
-def visualize_model_predictions(model, trial):
+def visualize_classification_predictions(model, trial):
 
     print("Prepping data for plot.")
 
     X, y = learn.load_data([trial], regression=False)
     y_predicted = model.predict(X)
+
+    if hasattr(model, 'feature_importance_'):
+        print("Significant Features")
+        feature_importances = np.array(model.feature_importances_)
+        print("Num: " + str(len(feature_importances)))
+        print("Mean: " + str(feature_importances.mean()))
+        print("Std Deviation: " + str(feature_importances.std()))
+
     print_stats(y, y_predicted)
 
     prompt = input("Would you like to create traces images? (y or n) ")
@@ -52,3 +61,17 @@ def visualize_model_predictions(model, trial):
         print("Creating image " + str(filename))
         plt.savefig(filename)
 
+
+def visualize_regression_predictions(model, trial):
+    print("Prepping data for plot.")
+    name = str(model.__class__.__name__)
+    X, y = learn.load_data([trial], regression=True)
+    y_predicted = model.predict(X)
+    rmse = math.sqrt(mean_squared_error(y, y_predicted))
+    print(name + " RMSE: " + str(rmse))
+    plt.figure()
+    plt.plot(y[:200], label="Actual")
+    plt.plot(y_predicted[:200], label="Predicted")
+    plt.title(name)
+    plt.legend()
+    plt.show()

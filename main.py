@@ -78,14 +78,10 @@ if __name__ == "__main__":
         reg = input("Regression (r) or classification (c)? ")
         if reg.strip().lower() == 'r':
             learn.run_regression(learning_trials)
+        elif reg.strip().lower() == 'c':
+            learn.run_classifiers(learning_trials)
         else:
-            analyze = input("Would you like to \n"
-                            "(c) compare models, \n"
-                            "(p) or pickle for testing? ")
-            if analyze.strip().lower() == 'c':
-                learn.run_classifiers(learning_trials)
-            else:
-                learn.pickle_model(learning_trials)
+            print("Invalid Input")
     elif action == 'CREATE':
         trial.load()
         filename = './data.csv'
@@ -100,8 +96,14 @@ if __name__ == "__main__":
         except FileNotFoundError:
             print("Must pickle a model before visualizing. Run learning directive.")
             exit(0)
-        from visualize import visualize_model_predictions
-        visualize_model_predictions(model, trial)
+        import visualize
+        reg = input("Regression (r) or classification (c)? ")
+        if reg.strip().lower() == 'r':
+            visualize.visualize_regression_predictions(model, trial)
+        elif reg.strip().lower() == 'c':
+            visualize.visualize_classification_predictions(model, trial)
+        else:
+            print("Invalid Input")
 
 
 

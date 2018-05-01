@@ -4,6 +4,7 @@ import pickle
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 from sklearn.linear_model import *
 from sklearn.model_selection import cross_val_score, cross_val_predict, GridSearchCV
 from sklearn.metrics import classification_report
@@ -11,6 +12,9 @@ from sklearn.svm import SVC
 from sklearn.ensemble import *
 from sklearn.utils import shuffle
 from sklearn.preprocessing import scale
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neighbors import KNeighborsRegressor
 
 WINDOW_SIZE = 1  # Seconds
 
@@ -39,7 +43,7 @@ def prepare_regression_labels(truth):
         window_end = i + window_range
         if window_end > end:
             break
-        label = truth.df.loc[i:window_end, keys.O2].iloc[-1]
+        label = truth.df.loc[i:window_end, keys.O2].mean()
         y.append(label)
     return np.array(y)
 
@@ -59,7 +63,7 @@ def prepare_classification_labels(sensor, truth):
     return np.array(y)
 
 
-def get_scores(models, X, y):
+def score_classification(models, X, y):
     for model in models:
         name = str(model.__class__.__name__)
         scores = cross_val_score(model, X, y, n_jobs=8, cv=10)
@@ -70,19 +74,6 @@ def get_scores(models, X, y):
         print("Predicted Label Count")
         count_labels(y_pred)
         print(classification_report(y, y_pred))
-
-
-
-def visualize_regression(models, X, y):
-    for model in models:
-        name = str(model.__class__.__name__)
-        y_predicted = cross_val_predict(model, X, y, n_jobs=8, cv=8)
-        plt.figure()
-        plt.plot(y, label="Actual")
-        plt.plot(y_predicted, label="Predicted")
-        plt.title(name)
-        plt.legend()
-        plt.show()
 
 
 def count_labels(y):
@@ -116,18 +107,56 @@ def load_data(trials, regression=False):
                 X = np.concatenate([X, _X])
                 y = np.concatenate([y, _y])
         X, y = shuffle(X, y, random_state=42)
-        X = scale(X)
+        # X = scale(X)
         print("Pickling data.")
         pickle.dump((X, y), open(pickle_name, 'wb'))
+    print("Loaded training examples and labels: " + str(len(y)))
     return X, y
 
 
+def score_regression(models, X, y):
+    from sklearn.metrics import mean_squared_error
+
+    for model in models:
+        name = str(model.__class__.__name__)
+        y_predicted = cross_val_predict(model, X, y, n_jobs=8, cv=8)
+        rmse = math.sqrt(mean_squared_error(y, y_predicted))
+        print(name + " RMSE: " + str(rmse))
+        print(name + " Mean: " + str(y_predicted.mean()))
+        print(name + " STD : " + str(y_predicted.std()))
+        plt.figure()
+        plt.plot(y[:200], label="Actual")
+        plt.plot(y_predicted[:200], label="Predicted")
+        plt.ylabel("SpO2 (%)")
+        plt.title(name)
+        plt.legend()
+        plt.show()
+
+
 def run_regression(trials):
+
     X, y = load_data(trials, regression=True)
-    models = [LinearRegression(normalize=True), Ridge(normalize=True),
-              RandomForestRegressor()]
-    visualize_regression(models, X, y)
-    get_scores(models, X, y)
+    models = [LinearRegression(normalize=True),
+              Ridge(normalize=True),
+              RandomForestRegressor(),
+              KNeighborsRegressor()]
+
+    score_regression(models, X, y)
+    model = prompt_for_model(models)
+    pickle_model(model, X, y)
+
+
+def prompt_for_model(models):
+    print("Select a model to pickle, or none to exit.")
+    for i, model in enumerate(models):
+        name = model.__class__.__name__
+        print('(' + str(i) + ')' + ' ' + name)
+    selection = input('Enter a number: ')
+    try:
+        return models[int(selection)]
+    except Exception:
+        print("Invalid Selection")
+        exit(0)
 
 
 def run_classifiers(trials):
@@ -139,28 +168,28 @@ def run_classifiers(trials):
     rf_optimal = _tune_classifier(RandomForestClassifier(), rf_params, X, y)
     models.append(RandomForestClassifier(**rf_optimal))
 
-    # svm_params = {'C': [0.001, 0.01, 0.1, 1, 10], 'gamma': [0.001, 0.01, 0.1, 1]}
+    # svm_params = {'C': [0.001, 0.01, 0.1, 1, 10], 'gamma': [0.001, 0.01, 0.1]}
     # svm_optimal = _tune_classifier(SVC(), svm_params, X, y)
+    # models.append(SVC(**svm_optimal))
     # models.append(SVC())
-    #
-    # lr_params = {'penalty': ['l1', 'l2']}
-    # lr_optimal = _tune_classifier(LogisticRegression(), lr_params, X, y)
-    # models.append(LogisticRegression(**lr_optimal))
 
-    count_labels(y)
+    lr_params = {'penalty': ['l1', 'l2']}
+    lr_optimal = _tune_classifier(LogisticRegression(), lr_params, X, y)
+    models.append(LogisticRegression(**lr_optimal))
 
-    get_scores(models, X, y)
+    models.append(GaussianNB())
+
+    knn_params = {'n_neighbors': range(2, 5)}
+    knn_optimal = _tune_classifier(KNeighborsClassifier(), knn_params, X, y)
+    models.append(KNeighborsClassifier(**knn_optimal))
+
+    score_classification(models, X, y)
+
+    model = prompt_for_model(models)
+    pickle_model(model, X, y)
 
 
-def pickle_model(trials):
-    X, y = load_data(trials, False)
-    print("Creating optimal Random Forest Model")
-    count_labels(y)
-    rf_params = {'n_estimators': range(5, 30), 'criterion': ['entropy']}
-    rf_optimal = _tune_classifier(RandomForestClassifier(), rf_params, X, y)
-    model = RandomForestClassifier(**rf_optimal)
-    print("Scoring model")
-    get_scores([model], X, y)
+def pickle_model(model, X, y):
     print("Fitting model")
     model.fit(X, y)
     print("Pickling model")
@@ -170,7 +199,7 @@ def pickle_model(trials):
 
 def _tune_classifier(cls, params, X, y):
     name = str(cls.__class__.__name__)
-    clf = GridSearchCV(cls, params, n_jobs=8, verbose=2)
+    clf = GridSearchCV(cls, params, n_jobs=8, verbose=1)
     print("Brute forcing " + name + " Params...")
     clf.fit(X, y)
     print("Best parameters set found on development set:")

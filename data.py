@@ -41,7 +41,7 @@ class Device:
     def __init__(self, device_data):
         self.description = device_data['description']
         self.name = device_data['name']
-        self.user_description = device_data.get('user_description', None)
+        self.user_description = device_data.get('user_description', 'None')
         self._create_data_frame(device_data['data'])
 
     def __str__(self):
@@ -68,6 +68,7 @@ class Device:
         assert(sorted(timestamps) == timestamps)
         indices = pd.to_datetime(timestamps, unit='ms')
         self.df = pd.DataFrame(data_list, columns=self.headers, index=indices)
+        self.df = self.df.fillna(method='pad')
 
     def _extract_row(self, readings):
         t = readings[keys.TIMESTAMP]
